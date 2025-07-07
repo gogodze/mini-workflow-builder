@@ -1,47 +1,50 @@
 {
-  "WorkFlowId": 0,
-  "WorkFlowName": "Demo",
-  "WorkflowTypeId": 1,
-  "IsActive": true,
-  "WorkflowActivities": [
+  "WorkflowName": "Demo",
+  "WorkflowDescription": "A demo workflow",
+  "Steps": [
     {
       "StepNo": 1,
-      "ParentStepNo": 0,
-      "Name": "Start",
+      "ParentStep": 0,
+      "Description": "Start",
       "ActivityId": 100,
       "ApplicationId": 1,
-      "WorkflowActivityJumps": [
-        { "JumpToStep": 2 }
-      ]
+      "ActivityName": "Start",
+      "Jumps": [2],
+      "Properties": [],
+      "Filters": null
     },
     {
       "StepNo": 2,
-      "ParentStepNo": 0,
-      "Name": "For Each",
+      "ParentStep": 0,
+      "Description": "If",
       "ActivityId": 200,
       "ApplicationId": 1,
-      "WorkflowActivityJumps": [
-        { "JumpToStep": 3 },
-        { "JumpToStep": 4 }
-      ]
+      "ActivityName": "If",
+      "Jumps": [3, 4],
+      "Properties": [],
+      "Filters": null
     },
     {
       "StepNo": 3,
-      "ParentStepNo": 2,
-      "Name": "Loop Body",
+      "ParentStep": 2,
+      "Description": "Loop Body",
       "ActivityId": 300,
       "ApplicationId": 1,
-      "WorkflowActivityJumps": [
-        { "JumpToStep": 2 }
-      ]
+      "ActivityName": "Loop Body",
+      "Jumps": [4],
+      "Properties": [],
+      "Filters": null
     },
     {
       "StepNo": 4,
-      "ParentStepNo": 0,
-      "Name": "Done",
+      "ParentStep": 0,
+      "Description": "Done",
       "ActivityId": 400,
       "ApplicationId": 1,
-      "WorkflowActivityJumps": []
+      "ActivityName": "Done",
+      "Jumps": [],
+      "Properties": [],
+      "Filters": null
     }
   ]
 }

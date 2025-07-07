@@ -1,9 +1,75 @@
 ﻿@page "/"
+@using Blazor.Diagrams.Core.Geometry
+@using Blazor.Diagrams.Core.PathGenerators
+@using Blazor.Diagrams.Core.Routers
+
+
+@inject HttpClient Client
 
 <div class="canvas-background justify-center w-full">
     <div class="flex flex-col items-center h-full w-full">
         <TopBar/>
-        <div class="flex items-center justify-center w-full h-full">main</div>
-
+        <div class="flex items-center justify-center w-full h-full">
+            @if (_diagram != null)
+            {
+                <CascadingValue Value="_diagram">
+                    <DiagramCanvas/>
+                </CascadingValue>
+            }
+        </div>
     </div>
 </div>
+
+@code
+{
+    private Workflow? _workflow = null;
+    private BlazorDiagram _diagram = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _workflow = await Client.GetFromJsonAsync<Workflow>("sample-workflow.json");
+
+        var options = new BlazorDiagramOptions
+        {
+            AllowMultiSelection = true,
+            Zoom = { Enabled = false },
+            Links =
+            {
+                DefaultRouter = new NormalRouter(),
+                DefaultPathGenerator = new SmoothPathGenerator()
+            },
+        };
+        _diagram = new BlazorDiagram(options);
+
+        var nodeMap = new Dictionary<int, NodeModel>();
+        int spacingX = 250;
+        int spacingY = 150;
+        int row = 0;
+
+        foreach (var step in _workflow!.Steps)
+        {
+            var position = new Point(100 + (row * spacingX), 100);
+            var node = new NodeModel(position)
+            {
+                Title = step.ActivityName
+            };
+            _diagram.Nodes.Add(node);
+            nodeMap[step.StepNo] = node;
+            row++;
+        }
+
+        foreach (var step in _workflow.Steps)
+        {
+            if (!nodeMap.ContainsKey(step.StepNo)) continue;
+
+            var fromNode = nodeMap[step.StepNo];
+            foreach (var jump in step.Jumps)
+            {
+                if (nodeMap.TryGetValue(jump, out var toNode))
+                {
+                    _diagram.Links.Add(new LinkModel(fromNode, toNode));
+                }
+            }
+        }
+    }
+}
