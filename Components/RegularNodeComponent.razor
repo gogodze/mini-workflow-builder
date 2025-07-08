@@ -2,14 +2,21 @@
 @using MiniWorkflowBuilder.Services
 @inject NodeEventService Events
 
-<div class="bg-transparent card" @onclick="HandleClick">
+<div class="relative" @onmouseenter="OnMouseEnter" @onmouseleave="OnMouseLeave">
+    <div class="w-16 h-16 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center cursor-pointer hover:border-gray-400 transition-colors" @onclick="HandleClick">
+        <h5 class="text-sm font-bold text-gray-700">@Node.Title</h5>
 
+        @foreach (var port in Node.Ports)
+        {
+            <PortRenderer @key="port" Port="port"/>
+        }
+    </div>
 
-    <h5 class="font-bold">@Node.Title</h5>
-
-    @foreach (var port in Node.Ports)
+    @if (_showHoverToolbar)
     {
-        <PortRenderer @key="port" Port="port"/>
+        <div @onmouseenter="OnToolbarMouseEnter" @onmouseleave="OnToolbarMouseLeave">
+            <NodeHoverToolbar Node="Node" OnNodeDeleted="HandleNodeDeleted" OnNodeDuplicated="HandleNodeDuplicated"/>
+        </div>
     }
 </div>
 
@@ -17,8 +24,56 @@
     [Parameter] public RegularNode Node { get; set; } = null!;
     [Parameter] public EventCallback<RegularNode> OnNodeClick { get; set; }
 
+    private bool _showHoverToolbar = false;
+    private bool _isHoveringNode = false;
+    private bool _isHoveringToolbar = false;
+
     private async Task HandleClick()
     {
         Events.RaiseNodeClicked(Node);
+    }
+
+    private void OnMouseEnter()
+    {
+        _isHoveringNode = true;
+        _showHoverToolbar = true;
+        StateHasChanged();
+    }
+
+    private async void OnMouseLeave()
+    {
+        _isHoveringNode = false;
+        await Task.Delay(100);
+        if (!_isHoveringNode && !_isHoveringToolbar)
+        {
+            _showHoverToolbar = false;
+            StateHasChanged();
+        }
+    }
+
+    private void OnToolbarMouseEnter()
+    {
+        _isHoveringToolbar = true;
+    }
+
+    private async void OnToolbarMouseLeave()
+    {
+        _isHoveringToolbar = false;
+        await Task.Delay(100);
+        if (!_isHoveringNode && !_isHoveringToolbar)
+        {
+            _showHoverToolbar = false;
+            StateHasChanged();
+        }
+    }
+
+    private void HandleNodeDeleted(BaseNode node)
+    {
+        // Handle node deletion logic here
+    }
+
+    private void HandleNodeDuplicated(BaseNode node)
+    {
+        // Handle node duplication logic here
     }
 }

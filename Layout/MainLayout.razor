@@ -9,7 +9,7 @@
     <CascadingValue Value="_draggedNodeType">
         @Body
     </CascadingValue>
-    <Drawer @bind-Node="_selectedNode"/>
+    <Drawer Node="_selectedNode" NodeChanged="OnNodeChanged"/>
 
 </div>
 
@@ -31,5 +31,11 @@
     private void OnNodeDragStarted(string nodeType)
     {
         _draggedNodeType = nodeType;
+    }
+
+    private void OnNodeChanged(BaseNode? node)
+    {
+        _selectedNode = node;
+        StateHasChanged();
     }
 }

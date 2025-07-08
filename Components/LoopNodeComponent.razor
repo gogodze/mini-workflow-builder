@@ -2,14 +2,28 @@
 @using MiniWorkflowBuilder.Services
 @inject NodeEventService Events
 
-<div class="bg-transparent card" @onclick="HandleClick">
+<div class="relative" @onclick="HandleClick" @onmouseenter="OnMouseEnter" @onmouseleave="OnMouseLeave">
+    <div class="w-16 h-16 bg-blue-500 border-2 border-blue-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-blue-600 transition-colors">
+        <img src="/Icons/Loop.png" class="w-6 h-6 filter brightness-0 invert" />
+    </div>
 
-    <img src="/Icons/Loop.png" class="rounded-full" />
-    <h5 class="font-bold">@Node.Title</h5>
+    <div class="absolute left-14 top-0 flex flex-col gap-1">
+        <div class="px-2 py-1 bg-gray-600 text-white text-xs rounded-full">Loop</div>
+        <div class="px-2 py-1 bg-gray-600 text-white text-xs rounded-full">Done</div>
+    </div>
+
+    <h5 class="text-xs font-bold text-gray-700 text-center mt-1">@Node.Title</h5>
 
     @foreach (var port in Node.Ports)
     {
         <PortRenderer @key="port" Port="port"/>
+    }
+
+    @if (_showHoverToolbar)
+    {
+        <div @onmouseenter="OnToolbarMouseEnter" @onmouseleave="OnToolbarMouseLeave">
+            <NodeHoverToolbar Node="Node" OnNodeDeleted="HandleNodeDeleted" OnNodeDuplicated="HandleNodeDuplicated"/>
+        </div>
     }
 </div>
 
@@ -17,8 +31,56 @@
     [Parameter] public LoopNode Node { get; set; } = null!;
     [Parameter] public EventCallback<LoopNode> OnNodeClick { get; set; }
 
+    private bool _showHoverToolbar = false;
+    private bool _isHoveringNode = false;
+    private bool _isHoveringToolbar = false;
+
     private async Task HandleClick()
     {
         Events.RaiseNodeClicked(Node);
+    }
+
+    private void OnMouseEnter()
+    {
+        _isHoveringNode = true;
+        _showHoverToolbar = true;
+        StateHasChanged();
+    }
+
+    private async void OnMouseLeave()
+    {
+        _isHoveringNode = false;
+        await Task.Delay(100);
+        if (!_isHoveringNode && !_isHoveringToolbar)
+        {
+            _showHoverToolbar = false;
+            StateHasChanged();
+        }
+    }
+
+    private void OnToolbarMouseEnter()
+    {
+        _isHoveringToolbar = true;
+    }
+
+    private async void OnToolbarMouseLeave()
+    {
+        _isHoveringToolbar = false;
+        await Task.Delay(100);
+        if (!_isHoveringNode && !_isHoveringToolbar)
+        {
+            _showHoverToolbar = false;
+            StateHasChanged();
+        }
+    }
+
+    private void HandleNodeDeleted(BaseNode node)
+    {
+        // Handle node deletion logic here
+    }
+
+    private void HandleNodeDuplicated(BaseNode node)
+    {
+        // Handle node duplication logic here
     }
 }

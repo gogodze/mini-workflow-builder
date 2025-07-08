@@ -5,15 +5,17 @@ namespace MiniWorkflowBuilder.Models;
 
 public class LoopNode : BaseNode
 {
-    public PortModel OutputPort { get; }
-    public PortModel InputPort { get; }
-    public LinkModel SelfLink { get; }
-    public LoopNode(Point? position = null) : base(position)
+    public PortModel? LoopPort { get; private set; }
+    public PortModel? DonePort { get; private set; }
+
+    public LoopNode(Point position) : base(position)
     {
-        OutputPort = AddPort(PortAlignment.Right);
-        InputPort = AddPort(PortAlignment.Left);
-        Title = "Loop Node";
-        SelfLink = new LinkModel(OutputPort, InputPort);
+        CreatePorts();
     }
 
+    private void CreatePorts()
+    {
+        LoopPort = AddPort(PortAlignment.Right);
+        DonePort = AddPort(PortAlignment.Right);
+    }
 }

@@ -45,7 +45,6 @@ public sealed class DiagramCreatorService
             {
                 var loop = new LoopNode(new Point(x, y)) { Title = step.ActivityName };
                 Diagram.Nodes.Add(loop);
-                Diagram.Links.Add(loop.SelfLink);
                 node = loop;
             }
             else if (featureType == ActivityFeatureType.ifblock)

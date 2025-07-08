@@ -1,31 +1,84 @@
 ﻿@using MiniWorkflowBuilder.Models
 @using MiniWorkflowBuilder.Services
 @inject NodeEventService Events
-@if (Node == null)
-{
-    <div></div>
-}
-else
-{
-    <div class="drawer-backdrop" @onclick="CloseDrawer" @onkeydown="OnKeyDown" tabindex="0">
-        <div class="drawer" @onclick:stopPropagation>
-            <button class="close-btn" @onclick="CloseDrawer">×</button>
-            <h2>Edit Node</h2>
 
-            <label>Label</label>
-            <input type="text" @bind="Node.Title"/>
+@if (Node != null)
+{
+    <div class="fixed right-0 top-0 h-full w-96 bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out overflow-y-auto border-l border-gray-200">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 bg-gray-50">
+            <h2 class="text-lg font-semibold text-gray-900">Edit Node</h2>
+            <button class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors duration-200" @onclick="CloseDrawer">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
 
-            <h3>Filters</h3>
-            @foreach (var filter in Node.Filters!)
-            {
-                <div class="filter-row flex gap-2">
-                    <input placeholder="FieldName" @bind="filter.FieldName"/>
-                    <input placeholder="Condition" @bind="filter.ConditionId"/>
-                    <input placeholder="Value" @bind="filter.FieldValue"/>
-                    <button @onclick="() => RemoveFilter(filter)">×</button>
+        <div class="p-6 space-y-6">
+            <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700">Label</label>
+                <input type="text" @bind="Node.Title" @bind:event="oninput"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"/>
+            </div>
+
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-medium text-gray-700">Filters</h3>
+                    <button @onclick="AddFilter"
+                            class="px-3 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                        Add Filter
+                    </button>
                 </div>
-            }
-            <button @onclick="AddFilter">Add Filter</button>
+
+                @if (Node.Filters != null && Node.Filters.Any())
+                {
+                    <div class="space-y-3">
+                        @foreach (var filter in Node.Filters)
+                        {
+                            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3">
+                                <div class="grid grid-cols-1 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Field Name</label>
+                                        <input placeholder="Enter field name" @bind="filter.FieldName" @bind:event="oninput"
+                                               class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"/>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Condition</label>
+                                        <select @bind="filter.ConditionId"
+                                                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white">
+                                            @foreach (var condition in Enum.GetValues<ConditionEnum>())
+                                            {
+                                                <option value="@condition">@condition</option>
+                                            }
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Value</label>
+                                        <input placeholder="Enter value" @bind="filter.FieldValue" @bind:event="oninput"
+                                               class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"/>
+                                    </div>
+                                </div>
+
+                                <div class="flex justify-end pt-2">
+                                    <button @onclick="() => RemoveFilter(filter)"
+                                            class="px-3 py-1 text-xs font-medium text-red-600 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 hover:border-red-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
+                                        Remove
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-8 bg-gray-50 border-2 border-dashed border-gray-200 rounded-lg">
+                        <p class="text-sm text-gray-500">No filters configured</p>
+                        <p class="text-xs text-gray-400 mt-1">Click "Add Filter" to create conditions</p>
+                    </div>
+                }
+            </div>
         </div>
     </div>
 }
@@ -42,7 +95,7 @@ else
 
     void CloseDrawer()
     {
-        OnClose.InvokeAsync(null);
+        NodeChanged.InvokeAsync(null);
     }
 
     void AddFilter()
@@ -50,12 +103,19 @@ else
         if (Node?.Filters == null)
             Node!.Filters = new List<ActivityCondition>();
 
-        Node.Filters.Add(new ActivityCondition());
+        Node.Filters.Add(new ActivityCondition
+        {
+            FieldName = "",
+            ConditionId = ConditionEnum.IsEquals,
+            FieldValue = ""
+        });
+        StateHasChanged();
     }
 
     void RemoveFilter(ActivityCondition filter)
     {
         Node?.Filters?.Remove(filter);
+        StateHasChanged();
     }
 
     void OnKeyDown(KeyboardEventArgs e)
@@ -64,4 +124,3 @@ else
             CloseDrawer();
     }
 }
-

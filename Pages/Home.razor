@@ -1,13 +1,13 @@
 ﻿@page "/"
 @using Blazor.Diagrams.Core.Geometry
 @using Blazor.Diagrams.Core.Models.Base
+@using Blazor.Diagrams.Core.PathGenerators
+@using Blazor.Diagrams.Core.Routers
 @using MiniWorkflowBuilder.Models
 @using MiniWorkflowBuilder.Services
 @inject DiagramCreatorService Creator
 @inject NodeEventService Events
 @inject IJSRuntime Js
-
-
 @inject HttpClient Client
 
 <div class="canvas-background justify-center w-full">
@@ -26,7 +26,6 @@
                 </CascadingValue>
             }
         </div>
-
     </div>
 </div>
 
@@ -43,6 +42,7 @@
     private ElementReference diagramWrapper;
     private BaseNode? SelectedNode;
     [CascadingParameter] private string? _draggedNodeType { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         var workflowBundle = await Client.GetFromJsonAsync<WorkflowBundle>("sample-workflow.json");
@@ -85,6 +85,7 @@
         };
 
         Creator.Diagram.Nodes.Add(newNode);
+
         StateHasChanged();
     }
 }
