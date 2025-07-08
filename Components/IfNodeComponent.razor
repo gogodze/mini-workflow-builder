@@ -1,0 +1,23 @@
+﻿@using MiniWorkflowBuilder.Models
+@using MiniWorkflowBuilder.Services
+@inject NodeEventService Events
+<div class="bg-transparent card" @onclick="HandleClick">
+
+    <img src="/Icons/If.png" class="rounded-full"/>
+    <h5 class="font-bold">@Node.Title</h5>
+
+    @foreach (var port in Node.Ports)
+    {
+        <PortRenderer @key="port" Port="port"/>
+    }
+</div>
+
+@code {
+    [Parameter] public IfNode Node { get; set; } = null!;
+    [Parameter] public EventCallback<IfNode> OnNodeClick { get; set; }
+
+    private async Task HandleClick()
+    {
+        Events.RaiseNodeClicked(Node);
+    }
+}

@@ -1,50 +1,135 @@
 {
-  "WorkflowName": "Demo",
-  "WorkflowDescription": "A demo workflow",
-  "Steps": [
-    {
-      "StepNo": 1,
-      "ParentStep": 0,
-      "Description": "Start",
-      "ActivityId": 100,
-      "ApplicationId": 1,
-      "ActivityName": "Start",
-      "Jumps": [2],
-      "Properties": [],
-      "Filters": null
-    },
-    {
-      "StepNo": 2,
-      "ParentStep": 0,
-      "Description": "If",
-      "ActivityId": 200,
-      "ApplicationId": 1,
-      "ActivityName": "If",
-      "Jumps": [3, 4],
-      "Properties": [],
-      "Filters": null
-    },
-    {
-      "StepNo": 3,
-      "ParentStep": 2,
-      "Description": "Loop Body",
-      "ActivityId": 300,
-      "ApplicationId": 1,
-      "ActivityName": "Loop Body",
-      "Jumps": [4],
-      "Properties": [],
-      "Filters": null
-    },
-    {
-      "StepNo": 4,
-      "ParentStep": 0,
-      "Description": "Done",
-      "ActivityId": 400,
-      "ApplicationId": 1,
-      "ActivityName": "Done",
-      "Jumps": [],
-      "Properties": [],
-      "Filters": null
-    }
-  ]
+  "Workflow": {
+    "WorkflowName": "Demo",
+    "WorkflowDescription": "Sample workflow with a For Each loop",
+    "Steps": [
+      {
+        "StepNo": 1,
+        "ParentStep": 0,
+        "Description": "Start",
+        "ActivityId": 100,
+        "ApplicationId": 1,
+        "ActivityName": "Start",
+        "Jumps": [2],
+        "Properties": [],
+        "Filters": null
+      },
+      {
+        "StepNo": 2,
+        "ParentStep": 1,
+        "Description": "For Each",
+        "ActivityId": 200,
+        "ApplicationId": 1,
+        "ActivityName": "For Each",
+        "Jumps": [3],
+        "Properties": [],
+        "Filters": null
+      },
+      {
+        "StepNo": 3,
+        "ParentStep": 2,
+        "Description": "If",
+        "ActivityId": 300,
+        "ApplicationId": 1,
+        "ActivityName": "If",
+        "Jumps": [4, 5],
+        "Properties": [],
+        "Filters": null
+      },
+      {
+        "StepNo": 4,
+        "ParentStep": 3,
+        "Description": "Do something A",
+        "ActivityId": 400,
+        "ApplicationId": 1,
+        "ActivityName": "do",
+        "Jumps": [6],
+        "Properties": [],
+        "Filters": null
+      },
+      {
+        "StepNo": 5,
+        "ParentStep": 3,
+        "Description": "Do something B",
+        "ActivityId": 500,
+        "ApplicationId": 1,
+        "ActivityName": "do",
+        "Jumps": [6],
+        "Properties": [],
+        "Filters": null
+      },
+      {
+        "StepNo": 6,
+        "ParentStep": 0,
+        "Description": "End",
+        "ActivityId": 600,
+        "ApplicationId": 1,
+        "ActivityName": "Done",
+        "Jumps": [],
+        "Properties": [],
+        "Filters": null
+      }
+    ]
+  },
+  "Application": {
+    "ApplicationId": 1,
+    "ApplicationName": "My App",
+    "ApplicationLogo": "/images/app-logo.png",
+    "Activities": [
+      {
+        "ActivityId": 100,
+        "ActivityName": "Start",
+        "ActivityType": 1,
+        "ActivityFeatureType": 0,
+        "Properties": [],
+        "IsShowProperties": false,
+        "IsShowFilter": false
+      },
+      {
+        "ActivityId": 200,
+        "ActivityName": "For Each",
+        "ActivityType": 2,
+        "ActivityFeatureType": 4,
+        "Properties": [],
+        "IsShowProperties": false,
+        "IsShowFilter": false
+      },
+      {
+        "ActivityId": 300,
+        "ActivityName": "If",
+        "ActivityType": 2,
+        "ActivityFeatureType": 1,
+        "Properties": [],
+        "IsShowProperties": false,
+        "IsShowFilter": false
+      },
+      {
+        "ActivityId": 400,
+        "ActivityName": "do",
+        "ActivityType": 2,
+        "ActivityFeatureType": 0,
+        "Properties": [],
+        "IsShowProperties": false,
+        "IsShowFilter": false
+      },
+      {
+        "ActivityId": 500,
+        "ActivityName": "do",
+        "ActivityType": 2,
+        "ActivityFeatureType": 0,
+        "Properties": [],
+        "IsShowProperties": false,
+        "IsShowFilter": false
+      },
+      {
+        "ActivityId": 600,
+        "ActivityName": "Done",
+        "ActivityType": 2,
+        "ActivityFeatureType": 0,
+        "Properties": [],
+        "IsShowProperties": false,
+        "IsShowFilter": false
+      }
+    ]
+  }
 }

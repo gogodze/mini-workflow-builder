@@ -1,0 +1,67 @@
+﻿@using MiniWorkflowBuilder.Models
+@using MiniWorkflowBuilder.Services
+@inject NodeEventService Events
+@if (Node == null)
+{
+    <div></div>
+}
+else
+{
+    <div class="drawer-backdrop" @onclick="CloseDrawer" @onkeydown="OnKeyDown" tabindex="0">
+        <div class="drawer" @onclick:stopPropagation>
+            <button class="close-btn" @onclick="CloseDrawer">×</button>
+            <h2>Edit Node</h2>
+
+            <label>Label</label>
+            <input type="text" @bind="Node.Title"/>
+
+            <h3>Filters</h3>
+            @foreach (var filter in Node.Filters!)
+            {
+                <div class="filter-row flex gap-2">
+                    <input placeholder="FieldName" @bind="filter.FieldName"/>
+                    <input placeholder="Condition" @bind="filter.ConditionId"/>
+                    <input placeholder="Value" @bind="filter.FieldValue"/>
+                    <button @onclick="() => RemoveFilter(filter)">×</button>
+                </div>
+            }
+            <button @onclick="AddFilter">Add Filter</button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public BaseNode? Node { get; set; }
+
+    [Parameter]
+    public EventCallback<BaseNode?> NodeChanged { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    void CloseDrawer()
+    {
+        OnClose.InvokeAsync(null);
+    }
+
+    void AddFilter()
+    {
+        if (Node?.Filters == null)
+            Node!.Filters = new List<ActivityCondition>();
+
+        Node.Filters.Add(new ActivityCondition());
+    }
+
+    void RemoveFilter(ActivityCondition filter)
+    {
+        Node?.Filters?.Remove(filter);
+    }
+
+    void OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+            CloseDrawer();
+    }
+}
+

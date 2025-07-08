@@ -1,8 +1,35 @@
-﻿@inherits LayoutComponentBase
+﻿@using MiniWorkflowBuilder.Models
+@using MiniWorkflowBuilder.Services
+@inherits LayoutComponentBase
+@inject NodeEventService Events
 
 <div class="flex w-screen h-screen">
-    <LeftBar/>
+    <LeftBar NodeDragStarted="OnNodeDragStarted"/>
 
-    @Body
+    <CascadingValue Value="_draggedNodeType">
+        @Body
+    </CascadingValue>
+    <Drawer @bind-Node="_selectedNode"/>
 
 </div>
+
+@code {
+    private string? _draggedNodeType;
+    private BaseNode? _selectedNode;
+
+    protected override void OnInitialized()
+    {
+        Events.NodeClicked += OnNodeClicked;
+    }
+
+    private void OnNodeClicked(BaseNode node)
+    {
+        _selectedNode = node;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnNodeDragStarted(string nodeType)
+    {
+        _draggedNodeType = nodeType;
+    }
+}

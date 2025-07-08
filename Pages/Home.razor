@@ -1,7 +1,11 @@
 ﻿@page "/"
 @using Blazor.Diagrams.Core.Geometry
-@using Blazor.Diagrams.Core.PathGenerators
-@using Blazor.Diagrams.Core.Routers
+@using Blazor.Diagrams.Core.Models.Base
+@using MiniWorkflowBuilder.Models
+@using MiniWorkflowBuilder.Services
+@inject DiagramCreatorService Creator
+@inject NodeEventService Events
+@inject IJSRuntime Js
 
 
 @inject HttpClient Client
@@ -9,67 +13,78 @@
 <div class="canvas-background justify-center w-full">
     <div class="flex flex-col items-center h-full w-full">
         <TopBar/>
-        <div class="flex items-center justify-center w-full h-full">
-            @if (_diagram != null)
+        <div @ref="diagramWrapper"
+             @ondragover:preventDefault="true"
+             @ondrop:preventDefault="true"
+             @ondragover="OnDragOver"
+             @ondrop="OnDrop"
+             class="flex items-center justify-center w-full h-full">
+            @if (Creator.Diagram != null)
             {
-                <CascadingValue Value="_diagram">
+                <CascadingValue Value="Creator.Diagram">
                     <DiagramCanvas/>
                 </CascadingValue>
             }
         </div>
+
     </div>
 </div>
 
 @code
 {
-    private Workflow? _workflow = null;
-    private BlazorDiagram _diagram = null!;
+    public class WorkflowBundle
+    {
+        public Workflow Workflow { get; set; } = null!;
 
+        public Application Application { get; set; } = null!;
+    }
+
+    private DiagramCanvas diagramCanvas;
+    private ElementReference diagramWrapper;
+    private BaseNode? SelectedNode;
+    [CascadingParameter] private string? _draggedNodeType { get; set; }
     protected override async Task OnInitializedAsync()
     {
-        _workflow = await Client.GetFromJsonAsync<Workflow>("sample-workflow.json");
+        var workflowBundle = await Client.GetFromJsonAsync<WorkflowBundle>("sample-workflow.json");
+        Creator.CreateNodes(workflowBundle!.Workflow, workflowBundle.Application);
+    }
 
-        var options = new BlazorDiagramOptions
+    private void OnDragOver(DragEventArgs e)
+    {
+        e.DataTransfer.DropEffect = "copy";
+    }
+
+    private async Task OnDrop(DragEventArgs e)
+    {
+        if (string.IsNullOrEmpty(_draggedNodeType))
+            return;
+
+        var rect = await Js!.InvokeAsync<BoundingClientRect>("getBoundingClientRect", diagramWrapper);
+
+        var x = e.ClientX - rect.Left;
+        var y = e.ClientY - rect.Top;
+
+        NodeModel newNode = _draggedNodeType switch
         {
-            AllowMultiSelection = true,
-            Zoom = { Enabled = false },
-            Links =
+            "loop" => new LoopNode(new Point(x, y))
             {
-                DefaultRouter = new NormalRouter(),
-                DefaultPathGenerator = new SmoothPathGenerator()
+                Title = "Loop Node",
+            },
+            "regular" => new RegularNode(new Point(x, y))
+            {
+                Title = "Regular Node",
+            },
+            "if" => new IfNode(new Point(x, y))
+            {
+                Title = "If Node",
+            },
+            _ => new RegularNode(new Point(x, y))
+            {
+                Title = "Regular Node",
             },
         };
-        _diagram = new BlazorDiagram(options);
 
-        var nodeMap = new Dictionary<int, NodeModel>();
-        int spacingX = 250;
-        int spacingY = 150;
-        int row = 0;
-
-        foreach (var step in _workflow!.Steps)
-        {
-            var position = new Point(100 + (row * spacingX), 100);
-            var node = new NodeModel(position)
-            {
-                Title = step.ActivityName
-            };
-            _diagram.Nodes.Add(node);
-            nodeMap[step.StepNo] = node;
-            row++;
-        }
-
-        foreach (var step in _workflow.Steps)
-        {
-            if (!nodeMap.ContainsKey(step.StepNo)) continue;
-
-            var fromNode = nodeMap[step.StepNo];
-            foreach (var jump in step.Jumps)
-            {
-                if (nodeMap.TryGetValue(jump, out var toNode))
-                {
-                    _diagram.Links.Add(new LinkModel(fromNode, toNode));
-                }
-            }
-        }
+        Creator.Diagram.Nodes.Add(newNode);
+        StateHasChanged();
     }
 }

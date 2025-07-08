@@ -4,17 +4,36 @@
         <img src="Icons/Search.svg"/>
     </div>
     <div class="flex flex-col gap-4">
-        <button><img src="Icons/Home.svg"/></button>
-        <button><img src="Icons/Workflows.svg"/></button>
-        <button><img src="Icons/Table.svg"/></button>
-        <button><img src="Icons/Apps.svg"/></button>
-        <button><img src="Icons/Connections.svg"/></button>
-        <button><img src="Icons/History.svg"/></button>
+        <button draggable="true" @ondragstart='e => OnDragStart(e, "regular")'>
+            <img src="Icons/Home.svg"/>
+        </button>
+        <button draggable="true" @ondragstart='e => OnDragStart(e, "loop")'>
+            <img src="Icons/Workflows.svg"/>
+        </button>
+        <button draggable="true" @ondragstart='e => OnDragStart(e, "if")'>
+            <img src="Icons/Table.svg"/>
+        </button>
+        <button draggable="true" @ondragstart='e => OnDragStart(e, "regular")'>
+            <img src="Icons/Apps.svg"/>
+        </button>
+        <button draggable="true" @ondragstart='e => OnDragStart(e, "loop")'>
+            <img src="Icons/Connections.svg"/>
+        </button>
+        <button draggable="true" @ondragstart='e => OnDragStart(e, "if")'>
+            <img src="Icons/History.svg"/>
+        </button>
     </div>
-
-
 </div>
 
 @code {
-    
+    [Parameter]
+    public EventCallback<string> NodeDragStarted { get; set; }
+
+    private async Task OnDragStart(DragEventArgs e, string nodeType)
+    {
+        await NodeDragStarted.InvokeAsync(nodeType);
+    }
 }
+
+
+
