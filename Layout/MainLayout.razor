@@ -7,10 +7,15 @@
     <LeftBar NodeDragStarted="OnNodeDragStarted"/>
 
     <CascadingValue Value="_draggedNodeType">
-        @Body
+        <div class="canvas-background justify-center w-full">
+            <div class="flex flex-col items-center h-full w-full">
+                <TopBar/>
+                @Body
+            </div>
+        </div>
     </CascadingValue>
-    <Drawer Node="_selectedNode" NodeChanged="OnNodeChanged"/>
 
+    <Drawer @bind-Node="_selectedNode"/>
 </div>
 
 @code {
@@ -31,11 +36,5 @@
     private void OnNodeDragStarted(string nodeType)
     {
         _draggedNodeType = nodeType;
-    }
-
-    private void OnNodeChanged(BaseNode? node)
-    {
-        _selectedNode = node;
-        StateHasChanged();
     }
 }
