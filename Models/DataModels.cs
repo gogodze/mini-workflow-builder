@@ -45,7 +45,7 @@ public class Application
 	}
 }
 
-public class ActivityCondition
+public class  ActivityCondition
 {
 	public string FieldName { get; set; }
 	public ConditionEnum ConditionId { get; set; }

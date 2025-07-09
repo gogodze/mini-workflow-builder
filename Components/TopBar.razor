@@ -1,9 +1,85 @@
-﻿
-<div class="flex items-center justify-between bg-background p-4 w-full">
-    <h1 class="font-bold text-2xl">My new workflow</h1>
-    <h1 class="font-bold text-2xl">Right Side</h1>
-</div>
+﻿@using MiniWorkflowBuilder.Services
+@using System.Text.Json
+@inject DiagramCreatorService Creator
+@inject IJSRuntime JSRuntime
+
+<header class="h-16 bg-white flex items-center px-6 w-full" role="banner" aria-label="Application header">
+    <div class="flex items-center gap-2">
+        <button aria-label="Go back">
+            <span class="sr-only">Go back</span>
+            <img src="Icons/ChevronLeft.svg" alt="Chevron left" class="size-5"/>
+        </button>
+        <h1 class="text-lg font text-gray-900">My New workflow</h1>
+    </div>
+
+    <div class="flex items-center ml-auto gap-2">
+        <button
+            class="h-9 px-2 py-1 text-sm bg-neutral-100/50 hover:bg-neutral-100 border border-neutral-300 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:ring-offset-2 transition-colors duration-200"
+            help="History"
+            aria-label="History">
+            <img src="Icons/History.svg" alt="icon" class="size-5 invert"/>
+            <span class="sr-only">History</span>
+        </button>
+
+        <button
+            class="h-9 px-2 py-1 text-sm bg-neutral-100/50 hover:bg-neutral-100 border border-neutral-300 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:ring-offset-2 transition-colors duration-200"
+            help="Settings"
+            aria-label="Settings">
+            <img src="Icons/Settings.svg" alt="icon" class="size-5 invert"/>
+            <span class="sr-only">Settings</span>
+        </button>
+
+        <button
+            class="h-9 px-2 py-1 text-sm bg-neutral-100/50 hover:bg-neutral-100 border border-neutral-300 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:ring-offset-2 transition-colors duration-200"
+            help="Download workflow as yaml"
+            aria-label="Download workflow as yaml">
+            <img src="Icons/Download.svg" alt="icon" class="size-5 invert"/>
+            <span class="sr-only">Download</span>
+        </button>
+
+        <button
+            class="h-9 px-2 py-1 text-sm bg-neutral-100/50 hover:bg-neutral-100 border border-neutral-300 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:ring-offset-2 transition-colors duration-200"
+            help="Preview"
+            aria-label="Preview">
+            <img src="Icons/Run.svg" alt="icon" class="size-5 invert"/>
+            <span class="sr-only">Preview</span>
+        </button>
+
+        <button @onclick="@SaveToLocalStorage"
+                class="h-9 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200"
+                aria-label="Save workflow to local storage">
+            Save
+        </button>
+    </div>
+</header>
 
 @code {
-    
+    private async Task SaveToLocalStorage()
+    {
+        try
+        {
+            var nodes = Creator.Diagram.Nodes.ToList();
+            var nodeData = nodes.Select(node => new
+            {
+                node.Id,
+                Type = node.GetType().Name,
+                node.Title,
+                Position = new { node.Position.X, node.Position.Y },
+                Filters = node is Models.BaseNode baseNode ? baseNode.Filters : null
+            }).ToList();
+
+            var jsonData = JsonSerializer.Serialize(nodeData, new JsonSerializerOptions
+            {
+                WriteIndented = true,
+            });
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "workflow-nodes", jsonData);
+            Console.WriteLine($"Saved {nodes.Count} nodes to localStorage");
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to save nodes: {ex.Message}");
+        }
+    }
 }

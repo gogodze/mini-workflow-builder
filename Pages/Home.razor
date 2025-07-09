@@ -1,51 +1,56 @@
 ﻿@page "/"
 @using Blazor.Diagrams.Core.Geometry
-@using Blazor.Diagrams.Core.Models.Base
-@using Blazor.Diagrams.Core.PathGenerators
-@using Blazor.Diagrams.Core.Routers
 @using MiniWorkflowBuilder.Models
 @using MiniWorkflowBuilder.Services
 @inject DiagramCreatorService Creator
-@inject NodeEventService Events
 @inject IJSRuntime Js
 @inject HttpClient Client
 
-<div class="canvas-background justify-center w-full">
-    <div class="flex flex-col items-center h-full w-full">
-        <TopBar/>
-        <div @ref="diagramWrapper"
-             @ondragover:preventDefault="true"
-             @ondrop:preventDefault="true"
-             @ondragover="OnDragOver"
-             @ondrop="OnDrop"
-             class="flex items-center justify-center w-full h-full">
-            @if (Creator.Diagram != null)
-            {
-                <CascadingValue Value="Creator.Diagram">
-                    <DiagramCanvas/>
-                </CascadingValue>
-            }
-        </div>
-    </div>
-</div>
+
+<main aria-label="node editor" @ref="_diagramWrapper"
+     @ondragover:preventDefault="true"
+     @ondrop:preventDefault="true"
+     @ondragover="@OnDragOver"
+     @ondrop="@OnDrop"
+     class="flex items-center justify-center w-full h-full">
+    @if (Creator.Diagram != null)
+    {
+        <CascadingValue Value="Creator.Diagram">
+            <DiagramCanvas/>
+        </CascadingValue>
+    }
+</main>
 
 @code
 {
-    public class WorkflowBundle
-    {
-        public Workflow Workflow { get; set; } = null!;
 
-        public Application Application { get; set; } = null!;
-    }
 
-    private DiagramCanvas diagramCanvas;
-    private ElementReference diagramWrapper;
-    private BaseNode? SelectedNode;
+    private ElementReference _diagramWrapper;
+    private BaseNode? _selectedNode;
     [CascadingParameter] private string? _draggedNodeType { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        var workflowBundle = await Client.GetFromJsonAsync<WorkflowBundle>("sample-workflow.json");
+        WorkflowBundle? workflowBundle;
+
+        var workflowBundleFromLs = await Js.InvokeAsync<string?>("localStorage.getItem", "workflow-nodes");
+        if (!string.IsNullOrWhiteSpace(workflowBundleFromLs))
+        {
+            try
+            {
+                workflowBundle = JsonSerializer.Deserialize<WorkflowBundle>(workflowBundleFromLs);
+            }
+            catch (JsonException ex)
+            {
+                Console.WriteLine(ex);
+                workflowBundle = await Client.GetFromJsonAsync<WorkflowBundle>("sample-workflow.json");
+            }
+        }
+        else
+        {
+            workflowBundle = await Client.GetFromJsonAsync<WorkflowBundle>("sample-workflow.json");
+        }
+
         Creator.CreateNodes(workflowBundle!.Workflow, workflowBundle.Application);
     }
 
@@ -59,7 +64,7 @@
         if (string.IsNullOrEmpty(_draggedNodeType))
             return;
 
-        var rect = await Js!.InvokeAsync<BoundingClientRect>("getBoundingClientRect", diagramWrapper);
+        var rect = await Js!.InvokeAsync<BoundingClientRect>("getBoundingClientRect", _diagramWrapper);
 
         var x = e.ClientX - rect.Left;
         var y = e.ClientY - rect.Top;

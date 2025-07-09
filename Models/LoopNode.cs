@@ -5,8 +5,8 @@ namespace MiniWorkflowBuilder.Models;
 
 public class LoopNode : BaseNode
 {
-    public PortModel? LoopPort { get; private set; }
-    public PortModel? DonePort { get; private set; }
+    public Blazor.Diagrams.Core.Models.PortModel? LoopPort { get; private set; }
+    public Blazor.Diagrams.Core.Models.PortModel? DonePort { get; private set; }
 
     public LoopNode(Point position) : base(position)
     {

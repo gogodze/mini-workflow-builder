@@ -1,41 +1,52 @@
 ﻿@using MiniWorkflowBuilder.Models
 @using MiniWorkflowBuilder.Services
 @inject NodeEventService Events
+@inject DiagramCreatorService Creator
 
-<div class="relative" @onclick="HandleClick" @onmouseenter="OnMouseEnter" @onmouseleave="OnMouseLeave">
-    <div class="w-16 h-16 bg-yellow-400 border-2 border-yellow-500 rounded-full flex items-center justify-center cursor-pointer hover:bg-yellow-500 transition-colors">
-        <img src="/Icons/Condition.png" class="w-6 h-6"/>
-
-        @foreach (var port in Node.Ports)
-        {
-            <PortRenderer @key="port" Port="port"/>
-        }
+<div class="relative node-container" @onclick="HandleClick" @onmouseenter="@OnMouseEnter" @onmouseleave="@OnMouseLeave">
+    <div class="w-16 h-16 bg-[#E0F6FF] hover:bg-[#E0F6FF] border border-[#00b2e4] rounded-full flex items-center justify-center cursor-pointer transition-colors shadow-md"
+         role="button"
+         tabindex="0"
+         aria-label="Condition workflow node: @Node.Title"
+         @onkeydown="HandleKeyDown">
+        <img src="/Icons/Condition.svg" class="w-6 h-6 opacity-70" alt="Condition icon" />
+        <PortRenderer Port="Node.GetPort(PortAlignment.Left)!" />
     </div>
 
-    <div class="absolute left-14 top-0 flex flex-col gap-1">
-        <div class="px-2 py-1 bg-green-600 text-white text-xs rounded-full">True</div>
-        <div class="px-2 py-1 bg-red-600 text-white text-xs rounded-full">False</div>
+    <div class="absolute left-18 top-0 flex flex-col gap-2" role="group" aria-label="If ports">
+        <div class="flex items-center gap-2">
+            <div class="px-2 py-1 bg-gray-200 text-gray-900 text-xs rounded-full border border-gray-300 shadow-sm" aria-label="True port">True</div>
+            <PortRenderer Port="Node.GetPort(PortAlignment.Right)!" />
+        </div>
+        <div class="flex items-center gap-2">
+            <div class="px-2 py-1 bg-gray-200 text-gray-900 text-xs rounded-full border border-gray-300 shadow-sm" aria-label="False port">False</div>
+            <PortRenderer Port="Node.GetPort(PortAlignment.Right)!" />
+        </div>
     </div>
 
-    <h5 class="text-xs font-bold text-gray-700 text-center mt-1">@Node.Title</h5>
+    <h5 class="text-xs font-medium text-gray-700 text-center mt-1 max-w-16 truncate">@Node.Title</h5>
 
     @if (_showHoverToolbar)
     {
         <div @onmouseenter="OnToolbarMouseEnter" @onmouseleave="OnToolbarMouseLeave">
-            <NodeHoverToolbar Node="Node" OnNodeDeleted="HandleNodeDeleted" OnNodeDuplicated="HandleNodeDuplicated"/>
+            <NodeHoverToolbar Node="Node"
+                              OnNodeDeleted="HandleNodeDeleted"
+                              OnNodeDuplicated="HandleNodeDuplicated"
+                              OnNodeRun="HandleNodeRun"/>
         </div>
     }
 </div>
+
 
 @code {
     [Parameter] public IfNode Node { get; set; } = null!;
     [Parameter] public EventCallback<IfNode> OnNodeClick { get; set; }
 
-    private bool _showHoverToolbar = false;
-    private bool _isHoveringNode = false;
-    private bool _isHoveringToolbar = false;
+    private bool _showHoverToolbar;
+    private bool _isHoveringNode;
+    private bool _isHoveringToolbar;
 
-    private async Task HandleClick()
+    private void HandleClick()
     {
         Events.RaiseNodeClicked(Node);
     }
@@ -47,15 +58,17 @@
         StateHasChanged();
     }
 
-    private async void OnMouseLeave()
+    private void OnMouseLeave()
     {
         _isHoveringNode = false;
-        await Task.Delay(100);
-        if (!_isHoveringNode && !_isHoveringToolbar)
+        Task.Delay(100).ContinueWith(_ =>
         {
-            _showHoverToolbar = false;
-            StateHasChanged();
-        }
+            if (!_isHoveringNode && !_isHoveringToolbar)
+            {
+                _showHoverToolbar = false;
+                InvokeAsync(StateHasChanged);
+            }
+        });
     }
 
     private void OnToolbarMouseEnter()
@@ -63,24 +76,44 @@
         _isHoveringToolbar = true;
     }
 
-    private async void OnToolbarMouseLeave()
+    private void OnToolbarMouseLeave()
     {
         _isHoveringToolbar = false;
-        await Task.Delay(100);
-        if (!_isHoveringNode && !_isHoveringToolbar)
+        Task.Delay(100).ContinueWith(_ =>
         {
-            _showHoverToolbar = false;
-            StateHasChanged();
+            if (!_isHoveringNode && !_isHoveringToolbar)
+            {
+                _showHoverToolbar = false;
+                InvokeAsync(StateHasChanged);
+            }
+        });
+    }
+
+    private Task HandleNodeDeleted(BaseNode node)
+    {
+        Creator.DeleteNode(node);
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task HandleNodeDuplicated(BaseNode node)
+    {
+        Creator.DuplicateNode(node);
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task HandleNodeRun(BaseNode node)
+    {
+        Console.WriteLine($"Running if condition node: {node.Title}");
+        return Task.CompletedTask;
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" || e.Key == " ")
+        {
+            await Task.Run(() => HandleClick());
         }
-    }
-
-    private void HandleNodeDeleted(BaseNode node)
-    {
-        // Handle node deletion logic here
-    }
-
-    private void HandleNodeDuplicated(BaseNode node)
-    {
-        // Handle node duplication logic here
     }
 }

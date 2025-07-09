@@ -1,29 +1,47 @@
-﻿<div class="flex flex-col w-[64px] items-center gap-2 bg-gray-50 border-r border-gray-200">
-    <img class="mt-5" src="Icons/Project%20Avatar.svg"/>
+﻿<nav class="flex flex-col w-[64px] items-center gap-2 bg-gray-50" role="navigation" aria-label="Workflow tools sidebar">
+    <img class="mt-5" src="Icons/Project%20Avatar.svg" alt="Project avatar" role="img"/>
     <div class="mt-5 mb-5">
-        <img src="Icons/Search.svg"/>
+        <img src="Icons/Search.svg" alt="Search" role="img"/>
     </div>
-    <div class="flex flex-col gap-4">
-        <button draggable="true" @ondragstart='e => OnDragStart(e, "regular")' class="p-2 rounded-lg hover:bg-gray-200 transition-colors duration-200">
-            <img src="Icons/Home.svg"/>
+    <div class="h-full py-4 flex flex-col items-center justify-center align-middle gap-4" role="group" aria-label="Draggable workflow components">
+        <button draggable="true" @ondragstart='@(e => OnDragStart(e, "regular"))'
+                class="p-2 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+                aria-label="Drag to add regular node">
+            <span class="sr-only">Drag to add regular node</span>
+            <img src="Icons/Home.svg" alt="Regular node"/>
         </button>
-        <button draggable="true" @ondragstart='e => OnDragStart(e, "loop")' class="p-2 rounded-lg hover:bg-gray-200 transition-colors duration-200">
-            <img src="Icons/Workflows.svg"/>
+        <button draggable="true" @ondragstart='@(e => OnDragStart(e, "loop"))'
+                class="p-2 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+                aria-label="Drag to add loop node">
+            <span class="sr-only">Drag to add loop node</span>
+            <img src="Icons/Workflows.svg" alt="Loop node"/>
         </button>
-        <button draggable="true" @ondragstart='e => OnDragStart(e, "if")' class="p-2 rounded-lg hover:bg-gray-200 transition-colors duration-200">
-            <img src="Icons/Table.svg"/>
+        <button draggable="true" @ondragstart='@(e => OnDragStart(e, "if"))'
+                class="p-2 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+                aria-label="Drag to add condition node">
+            <span class="sr-only">Drag to add condition node</span>
+            <img src="Icons/Table.svg" alt="Condition node"/>
         </button>
-        <button draggable="true" @ondragstart='e => OnDragStart(e, "regular")' class="p-2 rounded-lg hover:bg-gray-200 transition-colors duration-200">
-            <img src="Icons/Apps.svg"/>
+        <button draggable="true" @ondragstart='@(e => OnDragStart(e, "regular"))'
+                class="p-2 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+                aria-label="Drag to add app node">
+            <span class="sr-only">Drag to add app node</span>
+            <img src="Icons/Apps.svg" alt="App node"/>
         </button>
-        <button draggable="true" @ondragstart='e => OnDragStart(e, "loop")' class="p-2 rounded-lg hover:bg-gray-200 transition-colors duration-200">
-            <img src="Icons/Connections.svg"/>
+        <button draggable="true" @ondragstart='@(e => OnDragStart(e, "loop"))'
+                class="p-2 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+                aria-label="Drag to add connection node">
+            <span class="sr-only">Drag to add connection node</span>
+            <img src="Icons/Connections.svg" alt="Connection node"/>
         </button>
-        <button draggable="true" @ondragstart='e => OnDragStart(e, "if")' class="p-2 rounded-lg hover:bg-gray-200 transition-colors duration-200">
-            <img src="Icons/History.svg"/>
+        <button draggable="true" @ondragstart='@(e => OnDragStart(e, "if"))'
+                class="p-2 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+                aria-label="Drag to add history node">
+            <span class="sr-only">Drag to add history node</span>
+            <img src="Icons/History.svg" alt="History node"/>
         </button>
     </div>
-</div>
+</nav>
 
 @code {
     [Parameter]

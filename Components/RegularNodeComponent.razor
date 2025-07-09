@@ -1,21 +1,30 @@
 ﻿@using MiniWorkflowBuilder.Models
 @using MiniWorkflowBuilder.Services
 @inject NodeEventService Events
+@inject DiagramCreatorService Creator
 
-<div class="relative" @onmouseenter="OnMouseEnter" @onmouseleave="OnMouseLeave">
-    <div class="w-16 h-16 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center cursor-pointer hover:border-gray-400 transition-colors" @onclick="HandleClick">
-        <h5 class="text-sm font-bold text-gray-700">@Node.Title</h5>
-
+<div class="relative node-container" @onmouseenter="@OnMouseEnter" @onmouseleave="@OnMouseLeave">
+    <div class="w-16 h-16 bg-gray-100 hover:bg-gray-200 border border-gray-300/75 rounded-full flex items-center justify-center cursor-pointer transition-colors shadow-md"
+         @onclick="HandleClick"
+         role="button"
+         tabindex="0"
+         aria-label="Regular workflow node: @Node.Title"
+         @onkeydown="HandleKeyDown">
+        <h5 class="text-sm font-bold text-gray-900">@Node.Title</h5>
         @foreach (var port in Node.Ports)
         {
-            <PortRenderer @key="port" Port="port"/>
+            <PortRenderer Port="port" />
         }
     </div>
 
+
     @if (_showHoverToolbar)
     {
-        <div @onmouseenter="OnToolbarMouseEnter" @onmouseleave="OnToolbarMouseLeave">
-            <NodeHoverToolbar Node="Node" OnNodeDeleted="HandleNodeDeleted" OnNodeDuplicated="HandleNodeDuplicated"/>
+        <div @onmouseenter="@OnToolbarMouseEnter" @onmouseleave="@OnToolbarMouseLeave">
+            <NodeHoverToolbar Node="Node"
+                            OnNodeDeleted="HandleNodeDeleted"
+                            OnNodeDuplicated="HandleNodeDuplicated"
+                            OnNodeRun="HandleNodeRun"/>
         </div>
     }
 </div>
@@ -24,11 +33,11 @@
     [Parameter] public RegularNode Node { get; set; } = null!;
     [Parameter] public EventCallback<RegularNode> OnNodeClick { get; set; }
 
-    private bool _showHoverToolbar = false;
-    private bool _isHoveringNode = false;
-    private bool _isHoveringToolbar = false;
+    private bool _showHoverToolbar;
+    private bool _isHoveringNode;
+    private bool _isHoveringToolbar;
 
-    private async Task HandleClick()
+    private void HandleClick()
     {
         Events.RaiseNodeClicked(Node);
     }
@@ -40,15 +49,17 @@
         StateHasChanged();
     }
 
-    private async void OnMouseLeave()
+    private void OnMouseLeave()
     {
         _isHoveringNode = false;
-        await Task.Delay(100);
-        if (!_isHoveringNode && !_isHoveringToolbar)
+        Task.Delay(100).ContinueWith(_ =>
         {
-            _showHoverToolbar = false;
-            StateHasChanged();
-        }
+            if (!_isHoveringNode && !_isHoveringToolbar)
+            {
+                _showHoverToolbar = false;
+                InvokeAsync(StateHasChanged);
+            }
+        });
     }
 
     private void OnToolbarMouseEnter()
@@ -56,24 +67,44 @@
         _isHoveringToolbar = true;
     }
 
-    private async void OnToolbarMouseLeave()
+    private void OnToolbarMouseLeave()
     {
         _isHoveringToolbar = false;
-        await Task.Delay(100);
-        if (!_isHoveringNode && !_isHoveringToolbar)
+        Task.Delay(100).ContinueWith(_ =>
         {
-            _showHoverToolbar = false;
-            StateHasChanged();
+            if (!_isHoveringNode && !_isHoveringToolbar)
+            {
+                _showHoverToolbar = false;
+                InvokeAsync(StateHasChanged);
+            }
+        });
+    }
+
+    private Task HandleNodeDeleted(BaseNode node)
+    {
+        Creator.DeleteNode(node);
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task HandleNodeDuplicated(BaseNode node)
+    {
+        Creator.DuplicateNode(node);
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task HandleNodeRun(BaseNode node)
+    {
+        Console.WriteLine($"Running regular node: {node.Title}");
+        return Task.CompletedTask;
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" || e.Key == " ")
+        {
+            await Task.Run(() => HandleClick());
         }
-    }
-
-    private void HandleNodeDeleted(BaseNode node)
-    {
-        // Handle node deletion logic here
-    }
-
-    private void HandleNodeDuplicated(BaseNode node)
-    {
-        // Handle node duplication logic here
     }
 }
