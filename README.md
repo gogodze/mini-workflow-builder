@@ -3,7 +3,7 @@
 A Blazor WebAssembly application that provides a canvas-based workflow builder with drag-and-drop functionality, node editing capabilities, and visual workflow creation.
 
 
-![](https://github.com/gogodze/mini-workflow-builder/blob/master/Desktop%202025.07.09%20-%2015.24.47.05.mp4)
+![](https://qu.ax/jmqpT.mp4)
 
 
 ## 🎯 Overview
