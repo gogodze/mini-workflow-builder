@@ -3,7 +3,7 @@
 A Blazor WebAssembly application that provides a canvas-based workflow builder with drag-and-drop functionality, node editing capabilities, and visual workflow creation.
 
 
-![](https://qu.ax/jmqpT.mp4)
+[▶️ Watch demo video](https://qu.ax/jmqpT.mp4)
 
 
 ## 🎯 Overview
